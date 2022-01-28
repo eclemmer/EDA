@@ -81,7 +81,9 @@ public virtual with sharing class HierarchySettingsMapper {
      ****************************************************************************************************/
     public virtual boolean updateHierarchySettings(HierarchySettingsModel hierarchySettingsModel) {
         try {
-            update hierarchySettingsModel.hierarchySettings;
+            if (Hierarchy_Settings__c.SObjectType.getDescribe().isUpdateable()) {
+                update hierarchySettingsModel.hierarchySettings;
+            }
         } catch (System.DmlException e) {
             return false;
         }

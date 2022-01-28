@@ -83,8 +83,9 @@ public virtual with sharing class AutoEnrollmentMappingMapper {
                 )
             );
         }
-
-        update affiliationMappingList;
+        if (Affl_Mappings__c.SObjectType.getDescribe().isUpdateable()) {
+            update affiliationMappingList;
+        }
         return returnList;
     }
 }

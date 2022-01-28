@@ -169,6 +169,7 @@ public without sharing class UTIL_CustomSettingsFacade {
                 configSettings(orgSettings);
                 orgSettings.Setupownerid = UserInfo.getOrganizationId();
                 if (!Test.isRunningTest()) {
+                    /* sfca-disable-next-line ApexFlsViolationRule */
                     upsert orgSettings;
                 }
             }
@@ -302,6 +303,7 @@ public without sharing class UTIL_CustomSettingsFacade {
                     Auto_Program_Enrollment_Role__c,
                     Auto_Program_Enrollment_Status__c
                 FROM Affl_Mappings__c
+                WITH SECURITY_ENFORCED
                 ORDER BY Account_Record_Type__c
                 LIMIT 50000
             ];
@@ -329,6 +331,7 @@ public without sharing class UTIL_CustomSettingsFacade {
             relationshipLookup = [
                 SELECT Id, Name, Active__c, Female__c, Male__c, Neutral__c
                 FROM Relationship_Lookup__c
+                WITH SECURITY_ENFORCED
                 LIMIT 50000
             ];
         }
@@ -344,6 +347,7 @@ public without sharing class UTIL_CustomSettingsFacade {
             relationshipAutocreate = [
                 SELECT Id, Name, Campaign_Types__c, Field__c, Object__c, Relationship_Type__c
                 FROM Relationship_Auto_Create__c
+                WITH SECURITY_ENFORCED
                 LIMIT 50000
             ];
         }

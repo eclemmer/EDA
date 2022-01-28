@@ -1,8 +1,8 @@
 public with sharing class CMP_SettingsDataProvider {
     /*******************************************************************************************************
-    * @description Returns a list of results for use in the autocomplete component
-    * @return List<ProviderResult>
-    */
+     * @description Returns a list of results for use in the autocomplete component
+     * @return List<ProviderResult>
+     */
     @AuraEnabled
     public static List<ProviderResult> getAutocompleteResults(String sObjectType, String term) {
         List<ProviderResult> providerResults = new List<ProviderResult>();
@@ -24,8 +24,8 @@ public with sharing class CMP_SettingsDataProvider {
             // '%', '_', and '\' all are special characters in LIKE syntax.
             // We escape them here by prepending those characters with a backslash
             String preparedTerm = '%' + term.replaceAll('([%_\\\\])', '\\\\$0') + '%';
-            String soql = 'SELECT Name FROM {0} WHERE Name LIKE :preparedTerm ORDER BY Name LIMIT 10';
-            String query = String.format(soql, new List<String>{sObjectType});
+            String soql = 'SELECT Name FROM {0} WHERE Name LIKE :preparedTerm WITH SECURITY_ENFORCED ORDER BY Name LIMIT 10';
+            String query = String.format(soql, new List<String>{ sObjectType });
             List<SObject> results = Database.query(query);
 
             for (SObject so : results) {
@@ -42,9 +42,9 @@ public with sharing class CMP_SettingsDataProvider {
     }
 
     /*******************************************************************************************************
-    * @description helper class that holds the display string and sobject to return to the
-    * autocomplete lightning component
-    */
+     * @description helper class that holds the display string and sobject to return to the
+     * autocomplete lightning component
+     */
     public class ProviderResult {
         @AuraEnabled
         public String label;
