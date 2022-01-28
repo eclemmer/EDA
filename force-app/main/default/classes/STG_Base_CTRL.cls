@@ -72,8 +72,13 @@ public with sharing class STG_Base_CTRL {
      **/
     @AuraEnabled
     public static void saveHierarchySettings(Hierarchy_Settings__c hierarchySettings) {
-        /* sfca-disable-next-line ApexFlsViolationRule */
-        upsert hierarchySettings;
+        if (
+            Hierarchy_Settings__c.SObjectType.getDescribe().isCreateable() &&
+            Hierarchy_Settings__c.SObjectType.getDescribe().isUpdateable()
+        ) {
+            /* sfca-disable-next-line ApexFlsViolationRule */
+            upsert hierarchySettings;
+        }
     }
 
     /*******************************************************************************************************
@@ -93,8 +98,10 @@ public with sharing class STG_Base_CTRL {
                 toUpdate.add(setting);
             }
         }
-        /* sfca-disable-next-line ApexFlsViolationRule */
-        insert toInsert;
+        if (Affl_Mappings__c.SObjectType.getDescribe().isCreateable()) {
+            /* sfca-disable-next-line ApexFlsViolationRule */
+            insert toInsert;
+        }
         if (Affl_Mappings__c.SObjectType.getDescribe().isUpdateable()) {
             update toUpdate;
         }
@@ -117,8 +124,10 @@ public with sharing class STG_Base_CTRL {
                 toUpdate.add(setting);
             }
         }
-        /* sfca-disable-next-line ApexFlsViolationRule */
-        insert toInsert;
+        if (Relationship_Lookup__c.SObjectType.getDescribe().isCreateable()) {
+            /* sfca-disable-next-line ApexFlsViolationRule */
+            insert toInsert;
+        }
         if (Relationship_Lookup__c.SObjectType.getDescribe().isUpdateable()) {
             update toUpdate;
         }
@@ -141,8 +150,10 @@ public with sharing class STG_Base_CTRL {
                 toUpdate.add(setting);
             }
         }
-        /* sfca-disable-next-line ApexFlsViolationRule */
-        insert toInsert;
+        if (Relationship_Auto_Create__c.SObjectType.getDescribe().isCreateable()) {
+            /* sfca-disable-next-line ApexFlsViolationRule */
+            insert toInsert;
+        }
         if (Relationship_Auto_Create__c.SObjectType.getDescribe().isUpdateable()) {
             update toUpdate;
         }
@@ -173,8 +184,10 @@ public with sharing class STG_Base_CTRL {
             Auto_Program_Enrollment_Status__c = autoEnrollStatus,
             Primary_Affl_Field__c = primaryField
         );
-        /* sfca-disable-next-line ApexFlsViolationRule */
-        insert newMapping;
+        if (Affl_Mappings__c.SObjectType.getDescribe().isCreateable()) {
+            /* sfca-disable-next-line ApexFlsViolationRule */
+            insert newMapping;
+        }
         if (UTIL_CustomSettingsFacade.getAfflMappings() != null)
             UTIL_CustomSettingsFacade.afflMappings.add(newMapping);
         return newMapping.Id;
@@ -198,8 +211,10 @@ public with sharing class STG_Base_CTRL {
             Neutral__c = neutral,
             Active__c = active
         );
-        /* sfca-disable-next-line ApexFlsViolationRule */
-        insert newSetting;
+        if (Relationship_Lookup__c.SObjectType.getDescribe().isCreateable()) {
+            /* sfca-disable-next-line ApexFlsViolationRule */
+            insert newSetting;
+        }
         if (UTIL_CustomSettingsFacade.getReciprocalSettings() != null)
             UTIL_CustomSettingsFacade.relationshipLookup.add(newSetting);
         return newSetting.Id;
@@ -222,8 +237,10 @@ public with sharing class STG_Base_CTRL {
             Relationship_Type__c = relType,
             Campaign_Types__c = campaigns
         );
-        /* sfca-disable-next-line ApexFlsViolationRule */
-        insert newSetting;
+        if (Relationship_Auto_Create__c.SObjectType.getDescribe().isCreateable()) {
+            /* sfca-disable-next-line ApexFlsViolationRule */
+            insert newSetting;
+        }
         if (UTIL_CustomSettingsFacade.getAutoCreateSettings() != null)
             UTIL_CustomSettingsFacade.relationshipAutocreate.add(newSetting);
         return newSetting.Id;

@@ -169,8 +169,13 @@ public without sharing class UTIL_CustomSettingsFacade {
                 configSettings(orgSettings);
                 orgSettings.Setupownerid = UserInfo.getOrganizationId();
                 if (!Test.isRunningTest()) {
-                    /* sfca-disable-next-line ApexFlsViolationRule */
-                    upsert orgSettings;
+                    if (
+                        Hierarchy_Settings__c.SObjectType.getDescribe().isCreateable() &&
+                        Hierarchy_Settings__c.SObjectType.getDescribe().isUpdateable()
+                    ) {
+                        /* sfca-disable-next-line ApexFlsViolationRule */
+                        upsert orgSettings;
+                    }
                 }
             }
         }

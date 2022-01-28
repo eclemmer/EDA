@@ -90,8 +90,10 @@ public virtual with sharing class RelationshipLookupMapper {
             Neutral__c = relLookupModel.neutralValue,
             Active__c = relLookupModel.isActive
         );
-        /* sfca-disable-next-line ApexFlsViolationRule */
-        insert relLookupRecord;
+        if (Relationship_Lookup__c.SObjectType.getDescribe().isCreateable()) {
+            /* sfca-disable-next-line ApexFlsViolationRule */
+            insert relLookupRecord;
+        }
     }
 
     /**

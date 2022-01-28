@@ -93,8 +93,10 @@ public virtual with sharing class AffiliationMappingsMapper {
             Primary_Affl_Field__c = affiliationMappingModel.primaryAffiliationField
         );
 
-        /* sfca-disable-next-line ApexFlsViolationRule */
-        insert affiliationMappings;
+        if (Affl_Mappings__c.SObjectType.getDescribe().isCreateable()) {
+            /* sfca-disable-next-line ApexFlsViolationRule */
+            insert affiliationMappings;
+        }
     }
 
     /*****************************************************************************
