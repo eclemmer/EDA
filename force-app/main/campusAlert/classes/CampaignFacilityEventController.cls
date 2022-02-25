@@ -23,7 +23,7 @@ public with sharing class CampaignFacilityEventController {
     }
 
     //Gets a map of Facility Events by Facility ids from Campaign -> Facility Event -> Facility Event Participation -> Facility
-    public static Map<Id,Facility_Event__c> getFacilityEventsByFacilityIdsFromCampaignId(Id campaignId) {
+    private static Map<Id,Facility_Event__c> getFacilityEventsByFacilityIdsFromCampaignId(Id campaignId) {
         Map<Id,Facility_Event__c> facilityEventsByIds = new Map<Id,Facility_Event__c>([
             SELECT Id,
                 Event_Start__c,
@@ -58,7 +58,7 @@ public with sharing class CampaignFacilityEventController {
     }
 
     //Gets all Facilities recursively in a list order of parent, child, grandchild, etc
-    public static List<Facility__c> getAllFacilitiesFromParentFacilityIds(Set<Id> facilityIds) {
+    private static List<Facility__c> getAllFacilitiesFromParentFacilityIds(Set<Id> facilityIds) {
         //Map to permit for recursive keysets
         Map<Id, Facility__c> currentFacilities = new Map<Id, Facility__c>([
             SELECT Id,
@@ -88,7 +88,7 @@ public with sharing class CampaignFacilityEventController {
     }
 
     //Gets all facilities starting from parent facilities in an ordered list
-    public static List<FacilityModel> getFacilityModelsFromFacilities(List<Facility__c> allFacilities, Map<Id,Facility_Event__c> facilityEventsByFacilityIds) {
+    private static List<FacilityModel> getFacilityModelsFromFacilities(List<Facility__c> allFacilities, Map<Id,Facility_Event__c> facilityEventsByFacilityIds) {
         List<FacilityModel> baseFacilityModels = new List<FacilityModel>();
         Map<Id,FacilityModel> FacilityModelsByFacilityIds = new Map<Id,FacilityModel>();
 
