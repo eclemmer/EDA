@@ -2,19 +2,19 @@ public with sharing class CampaignFacilityEventController {
 
     public static List<FacilityModel> getFacilityModels(Id campaignId) {
         try {
-            Set<Id> facilityIds = CampaignFacilityEventController.getFacilityIdsFromCampaignId(campaignId);
+            Map<Id,Facility_Event__c> facilityEventsByFacilityIds = CampaignFacilityEventController.getFacilityEventsByFacilityIdsFromCampaignId(campaignId);
 
-            if(facilityIds.isEmpty()) {
+            if(facilityEventsByFacilityIds.isEmpty()) {
                 return new List<FacilityModel>();
             }
 
-            List<Facility__c> allFacilities = CampaignFacilityEventController.getAllFacilitiesFromParentFacilityIds(facilityIds);
+            List<Facility__c> allFacilities = CampaignFacilityEventController.getAllFacilitiesFromParentFacilityIds(facilityEventsByFacilityIds.keySet());
 
             if(allFacilities.isEmpty()) {
                 return new List<FacilityModel>();
             }
 
-            List<FacilityModel> facilityModels = CampaignFacilityEventController.getFacilityModelsFromFacilities(allFacilities);
+            List<FacilityModel> facilityModels = CampaignFacilityEventController.getFacilityModelsFromFacilities(allFacilities,facilityEventsByFacilityIds);
             return facilityModels;
 
         } catch (Exception e) {
@@ -22,34 +22,39 @@ public with sharing class CampaignFacilityEventController {
         }
     }
 
-    //Gets all facility ids from Campaign -> Facility Even -> Facility Event Participation -> Facility
-    public static Set<Id> getFacilityIdsFromCampaignId(Id campaignId) {
-        Map<Id,Facility_Event__c> facilityEvents = new Map<Id,Facility_Event__c>([
-            SELECT Id
+    //Gets a map of Facility Events by Facility ids from Campaign -> Facility Event -> Facility Event Participation -> Facility
+    public static Map<Id,Facility_Event__c> getFacilityEventsByFacilityIdsFromCampaignId(Id campaignId) {
+        Map<Id,Facility_Event__c> facilityEventsByIds = new Map<Id,Facility_Event__c>([
+            SELECT Id,
+                Event_Start__c,
+                Event_End__c
             FROM Facility_Event__c
             WHERE Campaign__c = :campaignId]);
         
-        if(facilityEvents.isEmpty()) {
-            return new Set<Id>();
+        if(facilityEventsByIds.isEmpty()) {
+            return new Map<Id,Facility_Event__c>();
         }
 
         Map<Id,Facility_Event_Participation__c> facilityEventParticipations = new Map<Id,Facility_Event_Participation__c>([
             SELECT Id,
-                Facility__c
+                Facility__c,
+                Facility_Event__c
             FROM Facility_Event_Participation__c
-            WHERE Facility_Event__c IN :facilityEvents.keySet()
+            WHERE Facility_Event__c IN :facilityEventsByIds.keySet()
         ]);
         
         if(facilityEventParticipations.isEmpty()) {
-            return new Set<Id>();
+            return new Map<Id,Facility_Event__c>();
         }
 
-        //Set to ensure uniqueness
-        Set<Id> facilityIds = new Set<Id>();
-        for(Facility_Event_Participation__c facilityEventParticipation : facilityEventParticipations.values()) {
-            facilityIds.add(facilityEventParticipation.Facility__c);
+        Map<Id,Facility_Event__c> facilityEventsByFacilityIds = new Map<Id,Facility_Event__c>();
+
+        for(Facility_Event_Participation__c currentFacilityEventParticipation : facilityEventParticipations.values()) {
+            //TODO: Properly support a multiplicity of Facility Events here as we can lose time tracking
+            facilityEventsByFacilityIds.put(currentFacilityEventParticipation.Facility__c, facilityEventsByIds.get(currentFacilityEventParticipation.Facility_Event__c));
         }
-        return facilityIds;
+
+        return facilityEventsByFacilityIds;
     }
 
     //Gets all Facilities recursively in a list order of parent, child, grandchild, etc
@@ -83,12 +88,12 @@ public with sharing class CampaignFacilityEventController {
     }
 
     //Gets all facilities starting from parent facilities in an ordered list
-    public static List<FacilityModel> getFacilityModelsFromFacilities(List<Facility__c> allFacilities) {
+    public static List<FacilityModel> getFacilityModelsFromFacilities(List<Facility__c> allFacilities, Map<Id,Facility_Event__c> facilityEventsByFacilityIds) {
         List<FacilityModel> baseFacilityModels = new List<FacilityModel>();
         Map<Id,FacilityModel> FacilityModelsByFacilityIds = new Map<Id,FacilityModel>();
 
         for(Facility__c currentFacility : allFacilities) {
-            FacilityModel currentFacilityModel = new FacilityModel(currentFacility);
+            FacilityModel currentFacilityModel = new FacilityModel(currentFacility,facilityEventsByFacilityIds.get(currentFacility.Id));
 
             if(currentFacility.Parent_Facility__c == null) {
                 //parents go into the top-level list
