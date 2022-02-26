@@ -9,7 +9,8 @@ public with sharing class CampaignFacilityEventController {
                 return new List<FacilityModel>();
             }
 
-            List<Facility__c> allFacilities = CampaignFacilityEventController.getAllFacilitiesFromParentFacilityIds(facilityEventsByFacilityIds.keySet());
+            //This is side effect on facilityEventsByFacilityIds
+            List<Facility__c> allFacilities = CampaignFacilityEventController.getAllFacilitiesFromParentFacilityIds(facilityEventsByFacilityIds.keySet(),facilityEventsByFacilityIds);
 
             if(allFacilities.isEmpty()) {
                 return new List<FacilityModel>();
@@ -85,7 +86,7 @@ public with sharing class CampaignFacilityEventController {
     }
 
     //Gets all Facilities recursively in a list order of parent, child, grandchild, etc
-    private static List<Facility__c> getAllFacilitiesFromParentFacilityIds(Set<Id> facilityIds) {
+    private static List<Facility__c> getAllFacilitiesFromParentFacilityIds(Set<Id> facilityIds, Map<Id,Facility_Event__c> facilityEventsByFacilityIds) {
         //Map to permit for recursive keysets
         Map<Id, Facility__c> currentFacilities = new Map<Id, Facility__c>([
             SELECT Id,
@@ -97,11 +98,11 @@ public with sharing class CampaignFacilityEventController {
 
         //Use this for a deliberate iteration sort the map does not provide
         List<Facility__c> allFacilities = new List<Facility__c>();
+        allFacilities.addAll(currentFacilities.values());
 
         //Though this is an iteration for an arbitrary nesting, this should not exceed the SOQL query limits
         WHILE(currentFacilities.isEmpty() == false) {
             //This saves cycles as we will reenter the loop and apply similar logic
-            allFacilities.addAll(currentFacilities.values());                
             currentFacilities = new Map<Id, Facility__c>([
                 SELECT Id,
                     Name,
@@ -109,6 +110,11 @@ public with sharing class CampaignFacilityEventController {
                 FROM Facility__c
                 WHERE Parent_Facility__c IN :currentFacilities.keySet()
             ]);
+
+            allFacilities.addAll(currentFacilities.values());
+            for(Facility__c currentFacility : currentFacilities.values()) {
+                facilityEventsByFacilityIds.put(currentFacility.Id,facilityEventsByFacilityIds.get(currentFacility.Parent_Facility__c));
+            }
         }
 
         return allFacilities;
@@ -120,9 +126,15 @@ public with sharing class CampaignFacilityEventController {
         Map<Id,FacilityModel> facilityModelsByFacilityIds = new Map<Id,FacilityModel>();
 
         for(Facility__c currentFacility : allFacilities) {
+
             FacilityModel currentFacilityModel = new FacilityModel(currentFacility,facilityEventsByFacilityIds.get(currentFacility.Id));
+
             //We ensured a list order that guarantees the parent is already processed in the get facilities method
-            FacilityModel parentFacilityModel = facilityModelsByFacilityIds.get(currentFacility.Parent_Facility__c);
+            FacilityModel parentFacilityModel = null;
+            
+            if(currentFacility.Parent_Facility__c != null) {
+                parentFacilityModel = facilityModelsByFacilityIds.get(currentFacility.Parent_Facility__c);
+            }
 
             if(parentFacilityModel == null) {
                 //parents go into the top-level list
