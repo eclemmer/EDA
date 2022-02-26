@@ -67,23 +67,29 @@ export default class CampaignFacilityEventVisualizer extends LightningElement {
             console.log(error);
         })
         .finally(() => {
-            console.log('Promise Resolution Complete');
+            console.log('Facility Promise Resolution Complete');
         });
     }
 
     processFacilityResults(facilityResults) {
+
         facilityResults.forEach((facilityReturn) => {
-            console.log('Facility info, id, channels, contacts')
-            console.log(facilityReturn.facilityId);
-            console.log(facilityReturn.slackChannels);
-            console.log(facilityReturn.contactIds);
+            console.log('Beginning facility processing.');
+            console.log('Facility Id: ' + facilityReturn.facilityId);
+            console.log('Facility Slack Channels: ' + facilityReturn.slackChannels);
+            console.log('Facility Contact Ids: ' + facilityReturn.contactIds);
 
             //Add slack channels to map
-            this.slackChannels.concat(facilityReturn.slackChannels);
-            this.contactIds.concat(facilityReturn.contactIds);
+
+            console.log('Contatenating Slack Channels.');
+            this.slackChannels = this.slackChannels.concat(facilityReturn.slackChannels);
+            console.log('All Slack Channels: ' + this.slackChannels);
+            console.log('Contatenating Contact Ids.');
+            this.contactIds = this.contactIds.concat(facilityReturn.contactIds);
+            console.log('All Contact Ids: ' + this.contactIds);
 
 
-            if(!this.facilityContactCounts[facilityReturn.facilityId]) {
+            /*if(!this.facilityContactCounts[facilityReturn.facilityId]) {
                 this.facilityContactCounts[facilityReturn.facilityId] = facilityReturn.length;
                 console.log('Making new facility entry');
                 console.log(this.facilityContactCounts[facilityReturn.facilityId]);
@@ -91,20 +97,12 @@ export default class CampaignFacilityEventVisualizer extends LightningElement {
                 console.log('Found old facility entry');
                 this.facilityContactCounts[facilityReturn.facilityId] = this.facilityContactCounts[facilityReturn.facilityId] + facilityReturn.length;
                 console.log(this.facilityContactCounts[facilityReturn.facilityId]);
-            }
-            console.log('Facility and Contact Counts');
-            console.log(JSON.stringify(facilityReturn.contactIds));
-            console.log('Facility contact counts');
-            console.log(JSON.stringify(this.facilityContactCounts));
-            console.log('Contact counts');
-            console.log(this.contactIds);*/
+            }*/
         });
 
         //Filter slack channels for uniqueness
-        this.slackChannels = [...new Map(this.slackChannels.map(slackChannel => [slackChannel, TRUE])).keys()];
+        this.slackChannels = [...new Map(this.slackChannels.map(slackChannel => [slackChannel, slackChannel])).keys()];
         //Filter contacts for uniqueness
-        this.contactIds = [...new Map(this.contactIds.map(contactId => [contactId, TRUE])).keys()];
-        console.log('Contacts');
-        console.log(JSON.stringify(this.contactIds));
+        this.contactIds = [...new Map(this.contactIds.map(contactId => [contactId, contactId])).keys()];
     }
 }
