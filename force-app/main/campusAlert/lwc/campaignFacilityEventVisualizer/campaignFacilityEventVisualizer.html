@@ -1,0 +1,10 @@
+<template>
+    <lightning-card title="Facility Event Console">
+        <lightning-tree-grid
+            if:true={treeGridData}
+            columns={treeGridColumns}
+            data={treeGridData}
+            key-field="id"
+        ></lightning-tree-grid>
+    </lightning-card>
+</template>
