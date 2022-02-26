@@ -1,7 +1,7 @@
 public class FlowLauncher {
 
     @AuraEnabled
-    public static void getImpactedContactIdsByFacilityModel(String campaignId, List<String> slackChannels) {
+    public static void sendSlackMessage(String campaignId, List<String> slackChannels) {
         try {
             FlowLauncher.start(campaignId, slackChannels);
         } catch (Exception e) {
