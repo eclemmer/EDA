@@ -3,7 +3,7 @@ public with sharing class FacilityModel {
     @AuraEnabled public String label;
     @AuraEnabled public Datetime eventStart;
     @AuraEnabled public Datetime eventEnd;
-    @AuraEnabled public Integer totalStudents;
+    @AuraEnabled public Integer totalPeople;
     @AuraEnabled public List<FacilityModel> children { get; private set; }
     public FacilityModel() {}
 
@@ -13,7 +13,7 @@ public with sharing class FacilityModel {
         this.label = facility.Name;
         this.eventStart = facilityEvent.Event_Start__c;
         this.eventEnd = facilityEvent.Event_End__c;
-        this.totalStudents = 0;
+        this.totalPeople = 0;
         this.children = new List<FacilityModel>();
     }
 }
