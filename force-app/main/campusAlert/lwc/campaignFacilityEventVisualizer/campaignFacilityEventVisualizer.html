@@ -1,5 +1,9 @@
 <template>
     <lightning-card title="Facility Event Console">
+        <c-campaign-processor
+            campaign-id={recordId}
+            contact-ids={contactIds}
+        ></c-campaign-processor>
         <lightning-tree-grid
             if:true={treeGridData}
             columns={treeGridColumns}
