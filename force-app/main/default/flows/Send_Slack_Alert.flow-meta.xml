@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
     <actionCalls>
-        <name>Emergency_Alert</name>
+        <name>Emergency_Alert_0</name>
         <label>Emergency Alert</label>
-        <locationX>176</locationX>
-        <locationY>158</locationY>
+        <locationX>264</locationX>
+        <locationY>398</locationY>
         <actionName>slackv2__invokePostMessage</actionName>
         <actionType>apex</actionType>
+        <connector>
+            <targetReference>Loop_through_the_slack_channels</targetReference>
+        </connector>
         <flowTransactionModel>CurrentTransaction</flowTransactionModel>
         <inputParameters>
             <name>message</name>
@@ -17,19 +20,53 @@
         <inputParameters>
             <name>messageDestinationId</name>
             <value>
-                <stringValue>a0W22000001Kr98EAC</stringValue>
+                <elementReference>Loop_through_the_slack_channels.Id</elementReference>
             </value>
         </inputParameters>
         <inputParameters>
             <name>recordId</name>
             <value>
-                <stringValue>50022000007EtxpAAC</stringValue>
+                <elementReference>SlackRecord.Id</elementReference>
             </value>
         </inputParameters>
     </actionCalls>
     <apiVersion>54.0</apiVersion>
+    <assignments>
+        <name>Input_Assignment</name>
+        <label>Input Assignment</label>
+        <locationX>176</locationX>
+        <locationY>158</locationY>
+        <assignmentItems>
+            <assignToReference>SlackChannel1</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Destinations</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>SlackRecord</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Record</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Loop_through_the_slack_channels</targetReference>
+        </connector>
+    </assignments>
     <interviewLabel>Send Slack Alert {!$Flow.CurrentDateTime}</interviewLabel>
     <label>Send Slack Alert</label>
+    <loops>
+        <name>Loop_through_the_slack_channels</name>
+        <label>Loop through the slack channels</label>
+        <locationX>176</locationX>
+        <locationY>278</locationY>
+        <collectionReference>SlackChannel1</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Emergency_Alert_0</targetReference>
+        </nextValueConnector>
+    </loops>
     <processMetadataValues>
         <name>BuilderType</name>
         <value>
@@ -53,10 +90,18 @@
         <locationX>50</locationX>
         <locationY>0</locationY>
         <connector>
-            <targetReference>Emergency_Alert</targetReference>
+            <targetReference>Input_Assignment</targetReference>
         </connector>
     </start>
     <status>Active</status>
+    <variables>
+        <name>Destinations</name>
+        <dataType>SObject</dataType>
+        <isCollection>true</isCollection>
+        <isInput>true</isInput>
+        <isOutput>true</isOutput>
+        <objectType>slackv2__Message_Destination__c</objectType>
+    </variables>
     <variables>
         <name>IncidentMessage</name>
         <dataType>String</dataType>
@@ -64,8 +109,16 @@
         <isInput>true</isInput>
         <isOutput>true</isOutput>
         <value>
-            <stringValue>There have been a COVID-19 case in this facility. We recommend you getting tested as you were in the same facility and could have been affected.</stringValue>
+            <stringValue>Dear Student,  We have been alerted that an individual recently diagnosed with or suspected to have COVID-19 may have been in close contact with you at a shared facility and time. We are following CDC recommendations to help ensure that the person diagnosed with or suspected to have zCOVID-19 follows instructions for isolation and remains away from others until they can safely return to school setting. We will continue to clean and disinfect all areas of the facility. Please visit our https://tinyurl.com/5n9abys2 for more updates. Terry Truewell Director of Student Support Service</stringValue>
         </value>
+    </variables>
+    <variables>
+        <name>Record</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>true</isOutput>
+        <objectType>Campaign</objectType>
     </variables>
     <variables>
         <name>RecordId</name>
@@ -73,5 +126,24 @@
         <isCollection>false</isCollection>
         <isInput>true</isInput>
         <isOutput>true</isOutput>
+        <value>
+            <stringValue>50022000007EtxpAAC</stringValue>
+        </value>
+    </variables>
+    <variables>
+        <name>SlackChannel1</name>
+        <dataType>SObject</dataType>
+        <isCollection>true</isCollection>
+        <isInput>true</isInput>
+        <isOutput>true</isOutput>
+        <objectType>slackv2__Message_Destination__c</objectType>
+    </variables>
+    <variables>
+        <name>SlackRecord</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>true</isOutput>
+        <objectType>Campaign</objectType>
     </variables>
 </Flow>
