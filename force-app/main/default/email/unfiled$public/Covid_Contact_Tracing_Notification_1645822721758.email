@@ -2,17 +2,24 @@
  <head> 
   <title></title> 
  </head> 
- <body style="height: auto; min-height: auto; background-color:#f5f2f2;line-height:1.15">
+ <body style="height: auto; min-height: auto;line-height:1.25">
    &nbsp; 
-  <div style="padding:50px; margin:0 auto; width:60%;background-color:#FFFFFF"> <span style="font-size:16px;"><span style="font-family:Helvetica,Arial,Helvetica,sans-serif">Dear&nbsp;{{{Recipient.FirstName}}},</span></span> 
+  <div style="padding:25px; margin:0 auto; width:60%;background-color:#FFFFFF"> <span style="font-size:16px;"><span style="font-family:Helvetica,Arial,Helvetica,sans-serif">Dear&nbsp;{{{Recipient.FirstName}}},</span></span> 
    <div> 
     <div style="size:50%; float: right"> 
-     <img alt="astro_nurse" src="{[devName:astro_nurse]}" style="max-width: 1170.4px; width: 139px; height: 185px;" title="astro_nurse" /> 
-    </div> <span style="font-size:16px;"><span style="font-family:Helvetica,Arial,Helvetica,sans-serif">Connected Campus University considers the health and well-being of our students and staff a priority. We have been alerted that an individual recently diagnosed with&nbsp;or suspected to have COVID-19 may have been in close contact with you at a shared facility and time.<br /> <br /> We are following Centers for Disease Control and Prevention (CDC) recommendations to help ensure that the person diagnosed with or suspected to have COVID-19 follows instructions for isolation and remains away from others until they can safely return to the school setting. We will </span></span><span style="font-size:16px;"><span style="font-family:Helvetica,Arial,Helvetica,sans-serif">also continue to clean and disinfect all areas of the facility. </span></span> 
+     <img alt="astro_nurse" src="{[devName:astro_nurse]}" style="max-width: 1170.4px; width: 153px; height: 204px;" title="astro_nurse" /> 
+    </div> 
+    <br /> <span style="font-size:16px;"><span style="font-family:Helvetica,Arial,Helvetica,sans-serif">Connected Campus University considers the health and well-being of our students and staff a priority. We have been alerted that an individual recently diagnosed with&nbsp;or suspected to have COVID-19 may have been in close contact with you at a shared facility and time.<br /> <br /> We are following Centers for Disease Control and Prevention (CDC) recommendations to help ensure that the person diagnosed with or suspected to have COVID-19 follows instructions for isolation and remains away from others until they can safely return to the school setting. We will </span></span><span style="font-size:16px;"><span style="font-family:Helvetica,Arial,Helvetica,sans-serif">also continue to clean and disinfect all areas of the facility. </span></span> 
     <p><span style="font-size:16px;"><span style="font-family:Helvetica,Arial,Helvetica,sans-serif"><span style="font-family:Helvetica,Arial,Helvetica,sans-serif;">We will continue to provide you with regular updates as needed and will continue to provide prompt notification of any COVID-19 or other health-related concerns. We encourage you to contact us with questions and concerns. Please call us at, email us at&nbsp;wellbeing@connectedcampus.edu, or visit our <a href="https://www.salesforce.com">website</a> for updates.</span></span></span></p> <span style="font-size:16px;"> <span style="font-family:Helvetica,Arial,Helvetica,sans-serif"> </span></span> 
     <p><span style="font-size:16px;"><span style="font-family:Helvetica,Arial,Helvetica,sans-serif"><span style="font-family:Helvetica,Arial,Helvetica,sans-serif;">Please be assured that we are committed to</span></span></span><span style="font-size:16px;"><span style="font-family:Helvetica,Arial,Helvetica,sans-serif"><span style="font-family:Helvetica,Arial,Helvetica,sans-serif;"> facilitating an optimal learning experience and ensuring the safety of our students and staff.</span></span></span></p> <span style="font-size:16px;"> <span style="font-family:Helvetica,Arial,Helvetica,sans-serif"> </span></span> 
     <p><span style="font-family:Helvetica,Arial,Helvetica,sans-serif"><span style="font-size:16px;"><span style="font-family:Helvetica,Arial,Helvetica,sans-serif;">Sincerely,<br /> <br /> Terry Truewell<br /> Director of Student Support Services</span></span><br /> &nbsp;</span></p> <span style="font-family:Helvetica,Arial,Helvetica,sans-serif"> </span> <span style="font-family:Helvetica,Arial,Helvetica,sans-serif"> </span> 
    </div> 
+  </div> 
+  <div id="" style="left: 827px; top: 98px;">
+    &nbsp; 
+  </div> 
+  <div id="" style="left: 827px; top: 98px;">
+    &nbsp; 
   </div> 
  </body>
 </html>
