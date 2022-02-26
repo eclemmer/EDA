@@ -1,4 +1,5 @@
-import { LightningElement, api } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
+import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import getFacilityModels from "@salesforce/apex/CampaignFacilityEventController.getFacilityModels";
 import getImpactedContactIdsByFacilityModel from "@salesforce/apex/FacilityEventContactFinderController.getImpactedContactIdsByFacilityModel";
 
@@ -14,17 +15,18 @@ const TREE_GRID_COLUMNS = [{
 
 export default class CampaignFacilityEventVisualizer extends LightningElement {
     @api recordId;
+    @track dataProcessing = true;
 
     facilityModels;
     slackChannels = [];
     contactIds = [];
-    facilityContactCounts = {};
+    facilityContactCounts = new Map();
 
     treeGridColumns = TREE_GRID_COLUMNS;
     treeGridData;
 
-    get stringifiedContactIds() {
-        return JSON.stringify(this.contactIds);
+    get noDistribution() {
+        return this.contactIds.length === 0 & this.slackChannels.length === 0 & !this.dataProcessing;
     }
 
     connectedCallback() {
@@ -36,7 +38,13 @@ export default class CampaignFacilityEventVisualizer extends LightningElement {
                 this.retrieveContacts(facilityModelArray);
             })
             .catch((error) => {
-                console.log(error);
+                const showToastEvent = new ShowToastEvent({
+                    title: "Error retrieving facilities to check for people.",
+                    message: error,
+                    variant: "error",
+                    mode: "dismissable",
+                });
+                this.dispatchEvent(showToastEvent);
             });
     }
 
@@ -59,42 +67,64 @@ export default class CampaignFacilityEventVisualizer extends LightningElement {
         
         Promise.all(contactPromises)
         .then((result) => {
-            console.log(JSON.stringify(result));
             this.processFacilityResults(result);
-            console.log('Facility Result parsing complete')
         })
         .catch((error) => {
-            console.log(error);
+            const showToastEvent = new ShowToastEvent({
+                title: "Error retrieving people from facilities.",
+                message: error,
+                variant: "error",
+                mode: "dismissable",
+            });
+            this.dispatchEvent(showToastEvent);
         })
         .finally(() => {
-            console.log('Facility Promise Resolution Complete');
+            this.dataProcessing = false;
         });
     }
 
     processFacilityResults(facilityResults) {
-
         facilityResults.forEach((facilityReturn) => {
-            console.log('Beginning facility processing.');
-            console.log('Facility Id: ' + facilityReturn.facilityId);
-
             //Add slack channels to map
             this.slackChannels = this.slackChannels.concat(facilityReturn.slackChannels);
             this.contactIds = this.contactIds.concat(facilityReturn.contactIds);
 
-            /*if(!this.facilityContactCounts[facilityReturn.facilityId]) {
-                this.facilityContactCounts[facilityReturn.facilityId] = facilityReturn.length;
-                console.log('Making new facility entry');
-                console.log(this.facilityContactCounts[facilityReturn.facilityId]);
+            if(!this.facilityContactCounts.has(facilityReturn.facilityId)) {
+                this.facilityContactCounts.set(facilityReturn.facilityId,facilityReturn.contactIds.length);
             } else {
-                console.log('Found old facility entry');
-                this.facilityContactCounts[facilityReturn.facilityId] = this.facilityContactCounts[facilityReturn.facilityId] + facilityReturn.length;
-                console.log(this.facilityContactCounts[facilityReturn.facilityId]);
-            }*/
+                this.facilityContactCounts.set(facilityReturn.facilityId,this.facilityContactCounts.get(facilityReturn.facilityId) + facilityReturn.contactIds.length);
+            }
         });
 
         //Filter slack channels for uniqueness
         this.slackChannels = [...new Map(this.slackChannels.map(slackChannel => [slackChannel, slackChannel])).keys()];
         //Filter contacts for uniqueness
         this.contactIds = [...new Map(this.contactIds.map(contactId => [contactId, contactId])).keys()];
+
+        this.generateTreeGrid();
+    }
+
+    generateTreeGrid() {
+        let tempArray = [].concat(this.facilityModels);
+        this.generateTreeGridRows(tempArray);
+        this.treeGridData = tempArray;
+    }
+
+    generateTreeGridRows(facilityModelArray) {
+        if (!facilityModelArray) {
+            return;
+        }
+
+        for (let i = 0; i < facilityModelArray.length; i++) {
+            facilityModelArray[i].totalPeople = this.facilityContactCounts.get(facilityModelArray[i].id);
+            if (facilityModelArray[i]["children"]) {
+                if (facilityModelArray[i]["children"].length > 0) {
+                    facilityModelArray[i]._children = facilityModelArray[i]["children"];
+                    this.generateHealthCheckItemRows(facilityModelArray[i]._children);
+                }
+
+                delete facilityModelArray[i].children;
+            }
+        }
     }
 }

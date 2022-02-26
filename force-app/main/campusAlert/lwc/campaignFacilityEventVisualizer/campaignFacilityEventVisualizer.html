@@ -1,19 +1,32 @@
 <template>
     <lightning-card title="Facility Event Console">
-        <c-campaign-processor
-            campaign-id={recordId}
-            contact-ids={contactIds}
-        ></c-campaign-processor>
-        <c-campaign-slack-sender
-            campaign-id={recordId}
-            slack-ids={slackChannels}
-        ></c-campaign-slack-sender>
-        <lightning-tree-grid
-            if:true={treeGridData}
-            columns={treeGridColumns}
-            data={treeGridData}
-            key-field="id"
-        ></lightning-tree-grid>
-        Slack Channels {slackChannels}
+        <template if:true={dataProcessing}>
+            <div>
+                <lightning-spinner
+                    alternative-text="Loading"
+                    variant="brand"
+                    size="large"
+                ></lightning-spinner>
+            </div>
+        </template>
+        <template if:true={noDistribution}>
+            There are no facility events to distribute or process.
+        </template>
+        <template if:false={noDistribution}>
+            <c-campaign-processor
+                campaign-id={recordId}
+                contact-ids={contactIds}
+            ></c-campaign-processor>
+            <c-campaign-slack-sender
+                campaign-id={recordId}
+                slack-ids={slackChannels}
+            ></c-campaign-slack-sender>
+            <lightning-tree-grid
+                if:true={treeGridData}
+                columns={treeGridColumns}
+                data={treeGridData}
+                key-field="id"
+            ></lightning-tree-grid>
+        </template>
     </lightning-card>
 </template>
