@@ -14,34 +14,36 @@ export default class CampaignProcessor extends LightningElement {
     connectedCallback() {}
 
     handlePopulateCampaign(event) {
-        campaignIsProcessing = true;
-        batchContacts()
-            .then(() => {
-                const apexPromises = contactsArray.map((contacts) =>
-                    addCampaignMembers({
-                        contactIds: contacts,
-                        campaignId: campaignId,
-                    })
-                );
+        this.campaignIsProcessing = true;
+        this.batchContacts();
 
-                Promise.all(apexPromises);
+        const apexPromises = this.contactsArray.map((contacts) =>
+            addCampaignMembers({
+                contactIds: contacts,
+                campaignId: this.campaignId,
             })
-            .catch((error) => {
-                console.log("Error adding Campaign Members");
-            })
-            .finally(() => {
-                buttonEnabled = false;
-                campaignIsProcessing = false;
-                console.log("Campaign Member population completed.");
-                this.dispatchEvent(new CustomEvent("populated"));
-            });
+        );
+
+        Promise.all(apexPromises).then((result) => {
+            console.log('Successful completion');
+        })
+        .catch((error) => {
+            console.log("Error adding Campaign Members");
+        })
+        .finally(() => {
+            this.buttonEnabled = false;
+            this.campaignIsProcessing = false;
+            this.dispatchEvent(new CustomEvent("populated"));
+        });
     }
 
     batchContacts() {
-        //ToDo - remove any duplicate Ids
-        while (contactIds.length) {
-            contactsArray.push(contactIds.splice(0, batchSize));
+        let mutableContactIds = [].concat(this.contactIds);
+        while (mutableContactIds.length > 0) {
+            /*const initialElements = mutableContactIds.splice(0, this.batchSize);
+            this.contactsArray.push(initialElements);*/
+
+            this.contactsArray.push(mutableContactIds.splice(0, this.batchSize));
         }
-        return;
     }
 }
