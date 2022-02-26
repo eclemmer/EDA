@@ -11,18 +11,19 @@ export default class CampaignProcessor extends LightningElement {
     @api campaignId;
     @api contactIds;
 
-    connectedCallback() {
-        const apexPromises = contactsArray.map((contacts) =>
-            addCampaignMembers({
-                contactIds: contacts,
-            })
-        );
-    }
+    connectedCallback() {}
 
     handlePopulateCampaign(event) {
         campaignIsProcessing = true;
         batchContacts()
             .then(() => {
+                const apexPromises = contactsArray.map((contacts) =>
+                    addCampaignMembers({
+                        contactIds: contacts,
+                        campaignId: campaignId,
+                    })
+                );
+
                 Promise.all(apexPromises);
             })
             .catch((error) => {
@@ -31,7 +32,8 @@ export default class CampaignProcessor extends LightningElement {
             .finally(() => {
                 buttonEnabled = false;
                 campaignIsProcessing = false;
-                console.log("Campaign Process completed.");
+                console.log("Campaign Member population completed.");
+                this.dispatchEvent(new CustomEvent("populated"));
             });
     }
 
