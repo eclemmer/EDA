@@ -89,5 +89,5 @@
             <targetReference>Please_Provide_Alert_Details</targetReference>
         </connector>
     </start>
-    <status>Draft</status>
+    <status>Active</status>
 </Flow>
