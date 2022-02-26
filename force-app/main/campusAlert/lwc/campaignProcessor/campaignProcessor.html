@@ -2,15 +2,11 @@
     <div class="slds-theme_default">
         <template if:true={campaignIsProcessing}>
             <div>
-                <lightning-spinner
-                    alternative-text="Loading"
-                    variant="brand"
-                    size="large"
-                ></lightning-spinner>
+                <lightning-spinner alternative-text="Loading" variant="brand" size="large"></lightning-spinner>
             </div>
         </template>
         <lightning-button
-            variant="brand-outline"
+            variant="brand"
             label="Populate Campaign"
             title="Populate Campaign"
             icon-name={iconName}

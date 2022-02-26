@@ -1,17 +1,20 @@
-import { LightningElement, api, track } from 'lwc';
+import { LightningElement, api, track } from "lwc";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import getFacilityModels from "@salesforce/apex/CampaignFacilityEventController.getFacilityModels";
 import getImpactedContactIdsByFacilityModel from "@salesforce/apex/FacilityEventContactFinderController.getImpactedContactIdsByFacilityModel";
 
-const TREE_GRID_COLUMNS = [{
-    type: 'text',
-    fieldName: 'label',
-    label: 'Facility Name'
-},{
-    type: 'text',
-    fieldName: 'totalPeople',
-    label: 'Total People'
-}];
+const TREE_GRID_COLUMNS = [
+    {
+        type: "text",
+        fieldName: "label",
+        label: "Facility Name",
+    },
+    {
+        type: "text",
+        fieldName: "totalPeople",
+        label: "Total People",
+    },
+];
 
 export default class CampaignFacilityEventVisualizer extends LightningElement {
     @api recordId;
@@ -26,7 +29,7 @@ export default class CampaignFacilityEventVisualizer extends LightningElement {
     treeGridData;
 
     get noDistribution() {
-        return this.contactIds.length === 0 & this.slackChannels.length === 0 & !this.dataProcessing;
+        return (this.contactIds.length === 0) & (this.slackChannels.length === 0) & !this.dataProcessing;
     }
 
     connectedCallback() {
@@ -54,33 +57,37 @@ export default class CampaignFacilityEventVisualizer extends LightningElement {
         facilityModels.forEach((facilityModel) => {
             facilityModelArray.push(facilityModel);
             //recurse in order
-            facilityModelArray.concat(this.extractFacilityModelsToArray(facilityModel.children))
+            facilityModelArray.concat(this.extractFacilityModelsToArray(facilityModel.children));
         });
 
         return facilityModelArray;
     }
 
     retrieveContacts(facilityModelArray) {
-        const contactPromises = facilityModelArray.map((facilityMod) => getImpactedContactIdsByFacilityModel({
-            facilityId: facilityMod.id, eventStart: facilityMod.eventStart, eventEnd: facilityMod.eventEnd
-        }));
-        
+        const contactPromises = facilityModelArray.map((facilityMod) =>
+            getImpactedContactIdsByFacilityModel({
+                facilityId: facilityMod.id,
+                eventStart: facilityMod.eventStart,
+                eventEnd: facilityMod.eventEnd,
+            })
+        );
+
         Promise.all(contactPromises)
-        .then((result) => {
-            this.processFacilityResults(result);
-        })
-        .catch((error) => {
-            const showToastEvent = new ShowToastEvent({
-                title: "Error retrieving people from facilities.",
-                message: error,
-                variant: "error",
-                mode: "dismissable",
+            .then((result) => {
+                this.processFacilityResults(result);
+            })
+            .catch((error) => {
+                const showToastEvent = new ShowToastEvent({
+                    title: "Error retrieving people from facilities.",
+                    message: error,
+                    variant: "error",
+                    mode: "dismissable",
+                });
+                this.dispatchEvent(showToastEvent);
+            })
+            .finally(() => {
+                this.dataProcessing = false;
             });
-            this.dispatchEvent(showToastEvent);
-        })
-        .finally(() => {
-            this.dataProcessing = false;
-        });
     }
 
     processFacilityResults(facilityResults) {
@@ -89,17 +96,22 @@ export default class CampaignFacilityEventVisualizer extends LightningElement {
             this.slackChannels = this.slackChannels.concat(facilityReturn.slackChannels);
             this.contactIds = this.contactIds.concat(facilityReturn.contactIds);
 
-            if(!this.facilityContactCounts.has(facilityReturn.facilityId)) {
-                this.facilityContactCounts.set(facilityReturn.facilityId,facilityReturn.contactIds.length);
+            if (!this.facilityContactCounts.has(facilityReturn.facilityId)) {
+                this.facilityContactCounts.set(facilityReturn.facilityId, facilityReturn.contactIds.length);
             } else {
-                this.facilityContactCounts.set(facilityReturn.facilityId,this.facilityContactCounts.get(facilityReturn.facilityId) + facilityReturn.contactIds.length);
+                this.facilityContactCounts.set(
+                    facilityReturn.facilityId,
+                    this.facilityContactCounts.get(facilityReturn.facilityId) + facilityReturn.contactIds.length
+                );
             }
         });
 
         //Filter slack channels for uniqueness
-        this.slackChannels = [...new Map(this.slackChannels.map(slackChannel => [slackChannel, slackChannel])).keys()];
+        this.slackChannels = [
+            ...new Map(this.slackChannels.map((slackChannel) => [slackChannel, slackChannel])).keys(),
+        ];
         //Filter contacts for uniqueness
-        this.contactIds = [...new Map(this.contactIds.map(contactId => [contactId, contactId])).keys()];
+        this.contactIds = [...new Map(this.contactIds.map((contactId) => [contactId, contactId])).keys()];
 
         this.generateTreeGrid();
     }
@@ -116,7 +128,10 @@ export default class CampaignFacilityEventVisualizer extends LightningElement {
         }
 
         for (let i = 0; i < facilityModelArray.length; i++) {
-            facilityModelArray[i].totalPeople = this.facilityContactCounts.get(facilityModelArray[i].id);
+            facilityModelArray[i].totalPeople = this.facilityContactCounts.get(facilityModelArray[i].id)
+                ? this.facilityContactCounts.get(facilityModelArray[i].id)
+                : 0;
+
             if (facilityModelArray[i]["children"]) {
                 if (facilityModelArray[i]["children"].length > 0) {
                     facilityModelArray[i]._children = facilityModelArray[i]["children"];

@@ -1,32 +1,73 @@
 <template>
-    <lightning-card title="Facility Event Console">
-        <template if:true={dataProcessing}>
-            <div>
-                <lightning-spinner
-                    alternative-text="Loading"
-                    variant="brand"
-                    size="large"
-                ></lightning-spinner>
+    <lightning-card>
+        <div class="slds-grid slds-gutters">
+            <div class="slds-col slds-size_1-of-1">
+                <template if:true={dataProcessing}>
+                    <div>
+                        <lightning-spinner alternative-text="Loading" variant="brand" size="large"></lightning-spinner>
+                    </div>
+                </template>
+
+                <!-- No events -->
+                <template if:true={noDistribution}> There are no facility events to distribute or process. </template>
+
+                <!-- Has events -->
+                <template if:false={noDistribution}>
+                    <div class="slds-grid slds-wrap slds-gutters">
+                        <div class="slds-col slds-size_1-of-1 slds-m-bottom_large slds-p-bottom_medium">
+                            <!-- Populate Campaign -->
+                            <div class="slds-text-title_caps slds-m-bottom_small">Populate the Campaign</div>
+                            <c-campaign-processor
+                                campaign-id={recordId}
+                                contact-ids={contactIds}
+                            ></c-campaign-processor>
+                        </div>
+
+                        <div class="slds-col slds-size_1-of-1 slds-m-bottom_medium">
+                            <p class="slds-text-title_caps slds-m-bottom_x-small">Broadcast the notification</p>
+                            <p class="slds-text-title slds-text-color_weak slds-p-left_small">
+                                <lightning-icon
+                                    icon-name="utility:email"
+                                    alternative-text="Email Instructions"
+                                    title="Email Instructions"
+                                    size="xx-small"
+                                    class="slds-m-right_xx-small"
+                                ></lightning-icon
+                                >Select "Send List Email" from the main dropdown to email.
+                            </p>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2 slds-m-bottom_large">
+                            <!-- Slack -->
+                            <c-campaign-slack-sender
+                                campaign-id={recordId}
+                                slack-ids={slackChannels}
+                            ></c-campaign-slack-sender>
+                        </div>
+
+                        <div class="slds-col slds-size_1-of-2 slds-m-bottom_large">
+                            <!-- ToDo: SMS functionality-->
+                            <lightning-button
+                                variant="brand-outline"
+                                label="Send as SMS"
+                                title="Send as SMS"
+                                icon-name="utility:anywhere_chat"
+                                class="slds-m-left_x-small"
+                            ></lightning-button>
+                        </div>
+                        <div class="slds-col slds-size_1-of-1 slds-m-top_medium">
+                            <!-- Facilities and Total Person Count -->
+                            <div class="slds-text-title_caps slds-m-bottom_small">Facilities with Person Counts</div>
+                            <lightning-tree-grid
+                                if:true={treeGridData}
+                                columns={treeGridColumns}
+                                data={treeGridData}
+                                key-field="id"
+                                hide-checkbox-column="true"
+                            ></lightning-tree-grid>
+                        </div>
+                    </div>
+                </template>
             </div>
-        </template>
-        <template if:true={noDistribution}>
-            There are no facility events to distribute or process.
-        </template>
-        <template if:false={noDistribution}>
-            <c-campaign-processor
-                campaign-id={recordId}
-                contact-ids={contactIds}
-            ></c-campaign-processor>
-            <c-campaign-slack-sender
-                campaign-id={recordId}
-                slack-ids={slackChannels}
-            ></c-campaign-slack-sender>
-            <lightning-tree-grid
-                if:true={treeGridData}
-                columns={treeGridColumns}
-                data={treeGridData}
-                key-field="id"
-            ></lightning-tree-grid>
-        </template>
+        </div>
     </lightning-card>
 </template>

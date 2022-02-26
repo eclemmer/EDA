@@ -4,14 +4,14 @@ import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import sendSlackMessage from "@salesforce/apex/FlowLauncher.sendSlackMessage";
 
 export default class CampaignProcessor extends LightningElement {
-    iconName = "utility:adduser";
+    iconName = "utility:notification";
     @track slackIsProcessing = false;
     @track buttonEnabled = true;
     @api campaignId;
     @api slackIds;
 
     get buttonDisabled() {
-        if(!this.buttonEnabled && this.slackIds.length == 0) {
+        if (!this.buttonEnabled && this.slackIds.length == 0) {
             return true;
         }
 
@@ -28,27 +28,27 @@ export default class CampaignProcessor extends LightningElement {
             campaignId: this.campaignId,
             slackChannels: this.slackIds,
         })
-        .then((result) => {
-            this.buttonEnabled = true;
-            this.slackIsProcessing = false;
-            const showToastEvent = new ShowToastEvent({
-                title: "Success",
-                message: "Slack messages sent to classroom channels.",
-                variant: "success",
-                mode: "dismissable",
+            .then((result) => {
+                this.buttonEnabled = true;
+                this.slackIsProcessing = false;
+                const showToastEvent = new ShowToastEvent({
+                    title: "Success",
+                    message: "Slack messages sent to classroom channels.",
+                    variant: "success",
+                    mode: "dismissable",
+                });
+                this.dispatchEvent(showToastEvent);
+            })
+            .error((error) => {
+                const showToastEvent = new ShowToastEvent({
+                    title: "Error sending slack messages",
+                    message: error,
+                    variant: "error",
+                    mode: "dismissable",
+                });
+                this.dispatchEvent(showToastEvent);
+                this.buttonEnabled = true;
+                this.slackIsProcessing = false;
             });
-            this.dispatchEvent(showToastEvent);
-        })
-        .error((error) => {
-            const showToastEvent = new ShowToastEvent({
-                title: "Error sending slack messages",
-                message: error,
-                variant: "error",
-                mode: "dismissable",
-            });
-            this.dispatchEvent(showToastEvent);
-            this.buttonEnabled = true;
-            this.slackIsProcessing = false;
-        })
     }
 }
