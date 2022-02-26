@@ -1,5 +1,6 @@
 public with sharing class CampaignFacilityEventController {
 
+    @AuraEnabled
     public static List<FacilityModel> getFacilityModels(Id campaignId) {
         try {
             Map<Id,Facility_Event__c> facilityEventsByFacilityIds = CampaignFacilityEventController.getFacilityEventsByFacilityIdsFromCampaignId(campaignId);
@@ -80,7 +81,7 @@ public with sharing class CampaignFacilityEventController {
                     Name,
                     Parent_Facility__c
                 FROM Facility__c
-                WHERE Id IN :currentFacilities.keySet()
+                WHERE Parent_Facility__c IN :currentFacilities.keySet()
             ]);
         }
 
@@ -90,20 +91,20 @@ public with sharing class CampaignFacilityEventController {
     //Gets all facilities starting from parent facilities in an ordered list
     private static List<FacilityModel> getFacilityModelsFromFacilities(List<Facility__c> allFacilities, Map<Id,Facility_Event__c> facilityEventsByFacilityIds) {
         List<FacilityModel> baseFacilityModels = new List<FacilityModel>();
-        Map<Id,FacilityModel> FacilityModelsByFacilityIds = new Map<Id,FacilityModel>();
+        Map<Id,FacilityModel> facilityModelsByFacilityIds = new Map<Id,FacilityModel>();
 
         for(Facility__c currentFacility : allFacilities) {
             FacilityModel currentFacilityModel = new FacilityModel(currentFacility,facilityEventsByFacilityIds.get(currentFacility.Id));
+            //We ensured a list order that guarantees the parent is already processed in the get facilities method
+            FacilityModel parentFacilityModel = facilityModelsByFacilityIds.get(currentFacility.Parent_Facility__c);
 
-            if(currentFacility.Parent_Facility__c == null) {
+            if(parentFacilityModel == null) {
                 //parents go into the top-level list
                 baseFacilityModels.add(currentFacilityModel);
                 continue;
             }
 
             //children go into the parent's child list
-            //We ensured a list order that guarantees the parent is already processed in the get facilities method
-            FacilityModel parentFacilityModel = FacilityModelsByFacilityIds.get(currentFacility.Parent_Facility__c);
             parentFacilityModel.children.add(currentFacilityModel);
         }
 
