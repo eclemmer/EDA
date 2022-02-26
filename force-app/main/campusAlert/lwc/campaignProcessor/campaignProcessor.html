@@ -1,0 +1,22 @@
+<template>
+    <div class="slds-theme_default">
+        <template if:true={campaignIsProcessing}>
+            <div>
+                <lightning-spinner
+                    alternative-text={labelReference.spinnerLoadingAltText}
+                    variant="brand"
+                    size="large"
+                ></lightning-spinner>
+            </div>
+        </template>
+        <lightning-button
+            variant="brand-outline"
+            label="Populate Campaign"
+            title="Populate Campaign"
+            icon-name={iconName}
+            onclick={handlePopulateCampaign}
+            class="slds-m-left_x-small"
+            enabled={buttonEnabled}
+        ></lightning-button>
+    </div>
+</template>

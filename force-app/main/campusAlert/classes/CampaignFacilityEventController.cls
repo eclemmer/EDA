@@ -23,6 +23,32 @@ public with sharing class CampaignFacilityEventController {
         }
     }
 
+    //Add new Campaign Members: contactId into campaignId
+    @AuraEnabled
+    public static void addCampaignMembers(List<String> contactIds, String campaignId){
+        String defaultMemberStatus = 'Sent'; //update as needed
+        List<CampaignMember> members = new List<CampaignMember>();
+
+        if(contactIds == null || contactIds.isEmpty() || String.isEmpty(campaignId)){
+            return;
+        }
+
+        try {
+            for(String contactId : contactIds){
+                if(!String.isEmpty(contactId)){
+	                members.add(new CampaignMember(
+    	                CampaignId = campaignId,
+        	            ContactId = contactId,
+            	        Status = defaultMemberStatus
+                	));                    
+                }
+            }            
+            Database.insert(members, false); //all-or-none = false, in case of duplicate failures
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
     //Gets a map of Facility Events by Facility ids from Campaign -> Facility Event -> Facility Event Participation -> Facility
     private static Map<Id,Facility_Event__c> getFacilityEventsByFacilityIdsFromCampaignId(Id campaignId) {
         Map<Id,Facility_Event__c> facilityEventsByIds = new Map<Id,Facility_Event__c>([
