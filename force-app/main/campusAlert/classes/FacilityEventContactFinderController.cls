@@ -3,31 +3,32 @@ public with sharing class FacilityEventContactFinderController {
     private static String courseOfferingScheduleQuery = 'SELECT '
         + 'Id, '
         + 'Course_Offering__c '
-        + 'Course_Offering__r.Slack_Channel__c '
         + 'FROM Course_Offering_Schedule__c '
-        + 'WHERE DAYTOKEN = TRUE'
-        + 'AND Facility__c = :facilityModel.Id'
-        + 'AND Course_Offering__r.Start_Date__c <= :courseTimeModel.eventStartDate'
-        + 'AND Course_Offering__r.End_Date__c >= :courseTimeModel.eventEndDate'
+        + 'WHERE DAYTOKEN = TRUE '
+        + 'AND Facility__c = :facilityId '
         + 'AND ('
             //Event between
             + '('
-                + 'Start_Time__c <= :courseTimeModel.eventStartTime'
-                + 'AND End_Time__c >= :courseTimeModel.eventEndTime'
+                + 'Start_Time__c <= :eventStartTime '
+                + 'AND End_Time__c >= :eventEndTime '
             + ') OR ('
             //Event starts before, ends during
-            + '('
-                + 'Start_Time__c >= :courseTimeModel.eventStartTime'
-                + 'AND Start_Time__c <= :courseTimeModel.eventEndTime'
+                + 'Start_Time__c >= :eventStartTime '
+                + 'AND Start_Time__c <= :eventEndTime '
             + ') OR ('
             //Event starts during, ends after
-            + '('
-                + 'End_Time__c >= :courseTimeModel.eventStartTime'
-                + 'AND End_Time__c <= :courseTimeModel.eventEndTime'
+                + 'End_Time__c >= :eventStartTime '
+                + 'AND End_Time__c <= :eventEndTime '
             + ')'
         + ')';
 
-    public static Map<String,Set<String>> getImpactedContactIdsByFacilityModel(FacilityModel facilityModel) {
+    @AuraEnabled
+    public static FacilityEventDistributionModel getImpactedContactIdsByFacilityModel(String facilityId, DateTime eventStart, DateTime eventEnd) {
+        FacilityModel facilityModel = new FacilityModel();
+        facilityModel.id = facilityId;
+        facilityModel.eventStart = eventStart;
+        facilityModel.eventEnd = eventEnd;
+
         try {
             return FacilityEventContactFinderController.getContactsAndChannelsFromFacilityModel(facilityModel);
         } catch (Exception e) {
@@ -36,8 +37,12 @@ public with sharing class FacilityEventContactFinderController {
     }
 
     //Get all affected people by Facility -> Course Offering Schedule -> Course Offering -> Course Connection -> Contact
-    private static Map<String,Set<String>> getContactsAndChannelsFromFacilityModel(FacilityModel facilityModel) {
+    private static FacilityEventDistributionModel getContactsAndChannelsFromFacilityModel(FacilityModel facilityModel) {
         CourseTimeModel courseTimeModel = new CourseTimeModel(facilityModel);
+        Id facilityId = facilityModel.id;
+        Time eventStartTime = courseTimeModel.eventStartTime;
+        Time eventEndTime = courseTimeModel.eventEndTime;
+        
 
         //TODO: Add support for time blocks, should be trivial
 
@@ -45,23 +50,38 @@ public with sharing class FacilityEventContactFinderController {
         //TODO: Add support for multiday events
         List<Course_Offering_Schedule__c> courseOfferingSchedulesInTime = Database.query(
             courseOfferingScheduleQuery.replace('DAYTOKEN',courseTimeModel.courseOfferingEventStartDayField));
-
         if(courseOfferingSchedulesInTime.isEmpty()) {
-            return new Map<String,Set<String>>();
+            return new FacilityEventDistributionModel();
         }
 
-        Map<String,Set<String>> returnMap = new Map<String,Set<String>>();
-        Set<String> slackChannels = new Set<String>();
-        returnMap.put('slackchannels',slackChannels);
-        Set<String> relevantContactIds = new Set<String>();
-        returnMap.put('contactids',relevantContactIds);
+        FacilityEventDistributionModel returnModel = new FacilityEventDistributionModel();
+        returnModel.facilityId = facilityModel.id;
 
         //Extract Course Offering Ids. This lets us skip an entire object query and go straight to Course Connection
         Set<Id> relevantCourseOfferingIds = new Set<Id>();
         for(Course_Offering_Schedule__c courseOfferingScheduleToProcess : courseOfferingSchedulesInTime) {
             relevantCourseOfferingIds.add(courseOfferingScheduleToProcess.Course_Offering__c);
-            slackChannels.add(courseOfferingScheduleToProcess.Course_Offering__r.Slack_Channel__c);
         }
+
+        Map<Id,Course_Offering__c> courseOfferingsInDateRange = new Map<Id,Course_Offering__c>([
+            SELECT Id,
+                Course_Slack_Channel__c
+            FROM Course_Offering__c
+            WHERE Id IN :relevantCourseOfferingIds
+            AND Start_Date__c <= :courseTimeModel.eventStartDate
+            AND End_Date__c >= :courseTimeModel.eventEndDate
+        ]);
+
+        if(courseOfferingsInDateRange.isEmpty()) {
+            return new FacilityEventDistributionModel();
+        }
+
+        Set<String> slackChannels = new Set<String>();
+        for(Course_Offering__c courseOfferingToProcess : courseOfferingsInDateRange.values()) {
+            slackChannels.add(courseOfferingToProcess.Course_Slack_Channel__c);
+        }
+        returnModel.slackChannels = new List<String>(slackChannels);
+
 
         //Get course connections based on course offerings
         //TODO: Add configuration setting for relevant Course Connection Statuses
@@ -69,19 +89,21 @@ public with sharing class FacilityEventContactFinderController {
             SELECT Id,
             Contact__c
             FROM Course_Enrollment__c
-            WHERE Course_Offering__c IN :relevantCourseOfferingIds
+            WHERE Course_Offering__c IN :courseOfferingsInDateRange.keySet()
         ];
 
         if(relevantCourseConnections.isEmpty()) {
-            return returnMap;
+            return returnModel;
         }
 
+        Set<Id> contactIds = new Set<Id>();
         //Extract Contact Ids
         for(Course_Enrollment__c courseConnectionToProcess : relevantCourseConnections) {
-            relevantContactIds.add(courseConnectionToProcess.Contact__c);
+            contactIds.add(courseConnectionToProcess.Contact__c);
         }
+        returnModel.contactIds = new List<Id>(contactIds);
 
-        return returnMap;
+        return returnModel;
     }
 
     //Time model to handle course time for facilities
@@ -136,5 +158,12 @@ public with sharing class FacilityEventContactFinderController {
                 return eventEndDayOfWeek + '__c';
             }
         }
+    }
+
+    public class FacilityEventDistributionModel{
+        @AuraEnabled public Id facilityId;
+        @AuraEnabled public List<Id> contactIds = new List<Id>();
+        @AuraEnabled public List<String> slackChannels = new List<String>();
+        public FacilityEventDistributionModel(){}
     }
 }
