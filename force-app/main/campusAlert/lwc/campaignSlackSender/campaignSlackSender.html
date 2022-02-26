@@ -1,6 +1,6 @@
 <template>
     <div class="slds-theme_default">
-        <template if:true={campaignIsProcessing}>
+        <template if:true={slackIsProcessing}>
             <div>
                 <lightning-spinner
                     alternative-text="Loading"
@@ -11,10 +11,10 @@
         </template>
         <lightning-button
             variant="brand-outline"
-            label="Populate Campaign"
-            title="Populate Campaign"
+            label="Send To Classroom Slack"
+            title="Send To Classroom Slack"
             icon-name={iconName}
-            onclick={handlePopulateCampaign}
+            onclick={handleSendToSlack}
             class="slds-m-left_x-small"
             disabled={buttonDisabled}
         ></lightning-button>

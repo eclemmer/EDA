@@ -4,11 +4,16 @@
             campaign-id={recordId}
             contact-ids={contactIds}
         ></c-campaign-processor>
+        <c-campaign-slack-sender
+            campaign-id={recordId}
+            slack-ids={slackChannels}
+        ></c-campaign-slack-sender>
         <lightning-tree-grid
             if:true={treeGridData}
             columns={treeGridColumns}
             data={treeGridData}
             key-field="id"
         ></lightning-tree-grid>
+        Slack Channels {slackChannels}
     </lightning-card>
 </template>

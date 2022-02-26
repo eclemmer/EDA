@@ -76,18 +76,10 @@ export default class CampaignFacilityEventVisualizer extends LightningElement {
         facilityResults.forEach((facilityReturn) => {
             console.log('Beginning facility processing.');
             console.log('Facility Id: ' + facilityReturn.facilityId);
-            console.log('Facility Slack Channels: ' + facilityReturn.slackChannels);
-            console.log('Facility Contact Ids: ' + facilityReturn.contactIds);
 
             //Add slack channels to map
-
-            console.log('Contatenating Slack Channels.');
             this.slackChannels = this.slackChannels.concat(facilityReturn.slackChannels);
-            console.log('All Slack Channels: ' + this.slackChannels);
-            console.log('Contatenating Contact Ids.');
             this.contactIds = this.contactIds.concat(facilityReturn.contactIds);
-            console.log('All Contact Ids: ' + this.contactIds);
-
 
             /*if(!this.facilityContactCounts[facilityReturn.facilityId]) {
                 this.facilityContactCounts[facilityReturn.facilityId] = facilityReturn.length;
